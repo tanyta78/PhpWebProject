@@ -10,9 +10,13 @@ $self = str_replace(
     $_SERVER['PHP_SELF']);
 $url = explode('/',str_replace($self,'',$url));
 
-$controllerName= ucfirst(array_shift($url));
+$controllerName= array_shift($url);
 $action = array_shift($url);
 
-$controller = new $controllerName();
+$app = new \Core\Application(
+    $controllerName,
+    $action,
+    $url
+);
 
-call_user_func([$controller,$action],$url);
+$app->start();
