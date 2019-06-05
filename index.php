@@ -2,20 +2,17 @@
 
 spl_autoload_register();
 
-$uri = explode('/',$_SERVER['REQUEST_URI']);
+$url = $_SERVER['REQUEST_URI'];
 
-array_shift($uri);
+$self = str_replace(
+    basename(__FILE__),
+    '',
+    $_SERVER['PHP_SELF']);
+$url = explode('/',str_replace($self,'',$url));
 
-$className = ucfirst(array_shift($uri));
-$methodName = array_shift($uri);
-$classFullName = 'Controllers\\'.$className.'Controller';
+$controllerName= ucfirst(array_shift($url));
+$action = array_shift($url);
 
-$view = new \Core\View();
+$controller = new $controllerName();
 
-$obj = new $classFullName($view);
-
-if(is_callable([$obj,$methodName])){
-    call_user_func_array([$obj,$methodName],$uri);
-}else{
-    echo '404 not found';
-}
+call_user_func([$controller,$action],$url);
