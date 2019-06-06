@@ -2,53 +2,68 @@
 
 namespace Core;
 
+use Core\Http\RequestContextInterface;
+use Core\ModelBinding\ModelBinderInterface;
 use Core\View\View;
 
 class Application
 {
-    /** @var string */
-    private $controllerName;
-    /** @var string */
-    private $actionName;
-    /** @var string [] */
-    private $parameters;
+    /**
+     * @var RequestContextInterface
+     */
+    private $request;
+    /**
+     * @var ModelBinderInterface
+     */
+    private $modelBinder;
 
     /**
      * Application constructor.
-     * @param string $controllerName
-     * @param string $actionName
-     * @param string[] $parameters
+     * @param RequestContextInterface $request
+     * @param ModelBinderInterface $modelBinder
      */
-    public function __construct(string $controllerName,
-                                string $actionName,
-                                array $parameters)
+    public function __construct(RequestContextInterface $request, ModelBinderInterface $modelBinder)
     {
-        $this->controllerName = $controllerName;
-        $this->actionName = $actionName;
-        $this->parameters = $parameters;
+        $this->request = $request;
+        $this->modelBinder = $modelBinder;
     }
+
 
     public function start(){
         $controllerName = 'Controllers\\'
-            . ucfirst($this->controllerName)
+            . ucfirst($this->request->getControllerName())
             .'Controller';
-        $view = new View($this->controllerName,$this->actionName);
+        $view = new View($this->request);
         $controller = new $controllerName($view);
 
         $actionInfo = new \ReflectionMethod(
             $controllerName,
-            $this->actionName
+            $this->request->getActionName()
         );
 
-        $actionInfo->getParameters();
-
+        $pos=-1;
+        $internalPos = 0;
+        $allParams = [];
+        $requestParams = $this->request->getParameters();
+        foreach ($actionInfo->getParameters() as $parameter){
+            $pos++;
+            $classType = $parameter->getClass();
+            if (null===$classType){
+                $allParams[$pos]=$requestParams[$internalPos];
+                $internalPos++;
+                continue;
+            }
+            $className =$classType->getName();
+            $bindingModel = $this->modelBinder->bind($_POST,$className);
+            $allParams[$pos]=$bindingModel;
+        }
 
         call_user_func_array(
             [
                 $controller,
-                $this->actionName
+                $this->request->getActionName()
             ],
-            $this->parameters
+            $allParams
         );
     }
 }

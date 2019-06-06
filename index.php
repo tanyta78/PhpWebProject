@@ -9,14 +9,24 @@ $self = str_replace(
     '',
     $_SERVER['PHP_SELF']);
 $url = explode('/',str_replace($self,'',$url));
-
 $controllerName= array_shift($url);
 $action = array_shift($url);
+$queryString = $_SERVER['QUERY_STRING'];
 
-$app = new \Core\Application(
+$modelBinder = new \Core\ModelBinding\ModelBinder();
+$request = new \Core\Http\RequestContext(
     $controllerName,
     $action,
-    $url
+    $url,
+    $queryString);
+
+$dbInfo = parse_ini_file("Config/db.ini");
+$pdo = new PDO($dbInfo['dsn'], $dbInfo['user'], $dbInfo['pass']);
+$db = new \Database\PDODatabase($pdo);
+
+$app = new \Core\Application(
+    $request,
+    $modelBinder
 );
 
 $app->start();

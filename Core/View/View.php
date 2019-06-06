@@ -4,29 +4,30 @@
 namespace Core\View;
 
 
+use Core\Http\RequestContextInterface;
+
 class View implements ViewInterface
 {
-    private $controllerName;
-    private $actionName;
+    /** @var RequestContextInterface */
+    private $request;
 
     /**
      * View constructor.
-     * @param $controllerName
-     * @param $actionName
+     * @param RequestContextInterface $request
      */
-    public function __construct($controllerName, $actionName)
+    public function __construct(RequestContextInterface $request)
     {
-        $this->controllerName = $controllerName;
-        $this->actionName = $actionName;
+        $this->request = $request;
     }
+
 
     public function render($viewName = null, $model = null)
     {
         if(null==$viewName || is_object($viewName)){
             $model = $viewName;
-            $viewName= $this->controllerName
+            $viewName= $this->request->getControllerName()
                 . DIRECTORY_SEPARATOR
-                . $this->actionName;
+                . $this->request->getActionName();
         }
         require_once 'Views/'.$viewName.'.php';
     }

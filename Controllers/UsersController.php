@@ -34,10 +34,16 @@ class UsersController
     }
 
     public function registerProcess(
-        UserRegisterBindingModel $model)
+        string $name,
+        UserRegisterBindingModel $bindingModel,
+        string $fullName)
     {
-        $user = $model->getUsername();
-        echo $user;
+        $user = $bindingModel->getUsername();
+        var_dump("Name from url: ".$name);
+        var_dump("Fullname: ".$fullName);
+        var_dump("Username: ".$user);
+
+        exit;
     }
 
 }
