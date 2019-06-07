@@ -24,15 +24,17 @@ $dbInfo = parse_ini_file("Config/db.ini");
 $pdo = new PDO($dbInfo['dsn'], $dbInfo['user'], $dbInfo['pass']);
 $db = new \Database\PDODatabase($pdo);
 
-$app = new \Core\Application(
-    $request,
-    $modelBinder
-);
-$app->cache(\Database\DatabaseInterface::class,$db);
+$container= new \Core\DependencyManagement\Container();
+$container->cache(\Core\DependencyManagement\ContainerInterface::class,$container);
+$container->cache(\Database\DatabaseInterface::class,$db);
+$container->cache(\Core\Http\RequestContextInterface::class,$request);
+$container->addDependency(\Core\ModelBinding\ModelBinderInterface::class,\Core\ModelBinding\ModelBinder::class);
+$container->addDependency(\Service\User\UserServiceInterface::class,
+ \Service\User\UserService::class);
+$container->addDependency(\Repository\User\UserRepositoryInterface::class,
+ \Repository\User\UserRepository::class);
+$container->addDependency(\Core\View\ViewInterface::class,\Core\View\View::class);
+$container->addDependency(\Core\ApplicationInterface::class,\Core\Application::class);
 
-$app->addDependencies(\Service\User\UserServiceInterface::class,
-    \Service\User\UserService::class);
-$app->addDependencies(\Repository\User\UserRepositoryInterface::class,
-    \Repository\User\UserRepository::class);
-
+$app = $container->resolve(\Core\ApplicationInterface::class);
 $app->start();

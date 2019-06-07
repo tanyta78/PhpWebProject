@@ -2,11 +2,11 @@
 
 namespace Core;
 
+use Core\DependencyManagement\ContainerInterface;
 use Core\Http\RequestContextInterface;
 use Core\ModelBinding\ModelBinderInterface;
-use Core\View\View;
 
-class Application
+class Application implements ApplicationInterface
 {
     /**
      * @var RequestContextInterface
@@ -16,41 +16,31 @@ class Application
      * @var ModelBinderInterface
      */
     private $modelBinder;
+    /**
+     * @var ContainerInterface
+     */
+    private $container;
 
-    private $dependencies;
-
-    private $cache;
 
     /**
      * Application constructor.
      * @param RequestContextInterface $request
      * @param ModelBinderInterface $modelBinder
+     * @param ContainerInterface $container
      */
-    public function __construct(RequestContextInterface $request, ModelBinderInterface $modelBinder)
+    public function __construct(RequestContextInterface $request, ModelBinderInterface $modelBinder, ContainerInterface $container)
     {
         $this->request = $request;
         $this->modelBinder = $modelBinder;
-        $this->dependencies=[];
-        $this->cache=[];
-    }
-
-    public function addDependencies($interface , $implementation)
-    {
-        $this->dependencies[$interface] = $implementation;
-    }
-
-
-    public function cache($interface , $obj)
-    {
-        $this->cache[$interface] = $obj;
+        $this->container = $container;
     }
 
     public function start(){
         $controllerName = 'Controllers\\'
             . ucfirst($this->request->getControllerName())
             .'Controller';
-        $view = new View($this->request);
-        $controller = new $controllerName($view);
+
+        $controller = $this->container->resolve($controllerName) ;
 
         $actionInfo = new \ReflectionMethod(
             $controllerName,
@@ -72,8 +62,8 @@ class Application
             $className =$classType->getName();
 
             $parameter = null;
-            if(array_key_exists($className,$this->dependencies)){
-                $parameter=$this->resolve($className);
+            if($this->container->exists($className)){
+                $parameter=$this->container->resolve($className);
             }else{
                 $parameter = $this->modelBinder->bind($_POST,$className);
             }
@@ -90,30 +80,5 @@ class Application
         );
     }
 
-    public function resolve($interfaceName)
-    {
-        if(array_key_exists($interfaceName,$this->cache)){
-            return $this->cache[$interfaceName];
-        }
 
-        $className=$this->dependencies[$interfaceName];
-        $classInfo = new \ReflectionClass($className);
-        $ctorInfo = $classInfo->getConstructor();
-
-        if(null==$ctorInfo){
-            $obj = new $className();
-            $this->cache($className,$obj);
-            return $obj;
-        }
-
-        $resolvedParameters = [];
-        foreach ($ctorInfo->getParameters() as $parameter){
-           $resolvedParameters[]= $this->resolve($parameter->getClass()->getName());
-        }
-
-        $obj = $classInfo->newInstanceArgs($resolvedParameters);
-        $this->cache($interfaceName,$obj);
-
-        return $obj;
-    }
 }
