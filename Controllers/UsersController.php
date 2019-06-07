@@ -6,6 +6,7 @@ use Core\View\View;
 use Core\View\ViewInterface;
 use Models\BindingModels\UserRegisterBindingModel;
 use Models\ViewModels\UserProfileViewModel;
+use Service\User\UserServiceInterface;
 
 class UsersController
 {
@@ -34,16 +35,10 @@ class UsersController
     }
 
     public function registerProcess(
-        string $name,
-        UserRegisterBindingModel $bindingModel,
-        string $fullName)
+       UserRegisterBindingModel $bindingModel,
+       UserServiceInterface $userService)
     {
-        $user = $bindingModel->getUsername();
-        var_dump("Name from url: ".$name);
-        var_dump("Fullname: ".$fullName);
-        var_dump("Username: ".$user);
-
-        exit;
+        $userService->register($bindingModel);
     }
 
 }

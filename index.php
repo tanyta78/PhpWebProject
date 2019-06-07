@@ -28,5 +28,11 @@ $app = new \Core\Application(
     $request,
     $modelBinder
 );
+$app->cache(\Database\DatabaseInterface::class,$db);
+
+$app->addDependencies(\Service\User\UserServiceInterface::class,
+    \Service\User\UserService::class);
+$app->addDependencies(\Repository\User\UserRepositoryInterface::class,
+    \Repository\User\UserRepository::class);
 
 $app->start();
