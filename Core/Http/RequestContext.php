@@ -10,20 +10,31 @@ class RequestContext implements RequestContextInterface
     private $actionName;
     private $parameters;
     private $queryString;
+    private $executingPath;
+    private $host;
 
-    /**
+     /**
      * RequestContext constructor.
      * @param $controllerName
      * @param $actionName
      * @param $parameters
      * @param $queryString
+     * @param $executingPath
+     * @param $host
      */
-    public function __construct($controllerName, $actionName, $parameters, $queryString)
+    public function __construct($controllerName,
+                                $actionName,
+                                $parameters,
+                                $queryString,
+                                $executingPath,
+                                $host)
     {
         $this->controllerName = $controllerName;
         $this->actionName = $actionName;
         $this->parameters = $parameters;
         $this->queryString = $queryString;
+        $this->executingPath = $executingPath;
+        $this->host = $host;
     }
 
     /**
@@ -58,5 +69,19 @@ class RequestContext implements RequestContextInterface
         return $this->queryString;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getExecutingPath()
+    {
+        return $this->executingPath;
+    }
 
+    /**
+     * @return mixed
+     */
+    public function getHost()
+    {
+        return $this->host;
+    }
 }

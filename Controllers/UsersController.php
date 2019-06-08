@@ -2,36 +2,21 @@
 
 namespace Controllers;
 
-use Core\View\View;
-use Core\View\ViewInterface;
 use Models\BindingModels\UserRegisterBindingModel;
 use Models\ViewModels\UserProfileViewModel;
 use Service\User\UserServiceInterface;
 
-class UsersController
+class UsersController extends AbstractController
 {
-    /** @var ViewInterface */
-    private $view;
-
-    /**
-     * UsersController constructor.
-     * @param ViewInterface $view
-     */
-    public function __construct(ViewInterface $view)
-    {
-        $this->view = $view;
-    }
-
-
     public function profile($name)
     {
        $model = new UserProfileViewModel($name);
-       $this->view->render($model);
+       $this->render($model);
     }
 
     public function register()
     {
-        $this->view->render();
+        $this->render();
     }
 
     public function registerProcess(
@@ -39,6 +24,7 @@ class UsersController
        UserServiceInterface $userService)
     {
         $userService->register($bindingModel);
+        $this->redirect("home","index", $bindingModel->getUsername());
     }
 
 }

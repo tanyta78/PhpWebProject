@@ -14,4 +14,8 @@ interface RequestContextInterface
 
     public function getQueryString();
 
+    public function getExecutingPath();
+
+    public function getHost();
+
 }
